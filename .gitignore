@@ -1,6 +1,5 @@
 .DS_Store
 node_modules
-package.json
 package-lock.json
 destroy.js
 config.js
