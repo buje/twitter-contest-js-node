@@ -34,23 +34,9 @@ function start(){
 
   stream.on('tweet', function (tweet) {
 
-      var idTweet = null;
-
       try{
 
-        if(tweet.quoted_status){
-          if(!tweet.quoted_status.retweeted){
-            idTweet = tweet.quoted_status.id_str;
-          }
-        }else if(tweet.retweeted_status){
-          if(!tweet.retweeted_status.retweeted){
-            idTweet = tweet.retweeted_status.id_str;
-          }
-        }else{
-          if(!tweet.retweeted){
-            idTweet = tweet.id_str;
-          }
-        }
+        var idTweet = utils.getInfoOfTweet(tweet).idTweet;
 
         if(tweetsData.data.indexOf(idTweet) > -1){
           console.log('\n\n'+chalk.red('@@@@@@@@@@@@@@@@@ #'+chalk.blue(idTweet)+' Déjà Retweeter @@@@@@@@@@@@@@@@@'));
@@ -138,33 +124,62 @@ function addDataToFile(tweetToSave){
 
 }
 
-function getTweetOfUser(){
+function getTweetOfUser(data){
 
-  var user = utils.randomItem(config.ACCOUNT_TO_RETWEET);
+  var doTweet = function(data){
+    T.post('statuses/update', { status: data.text })
+      .catch(reset)
+      .then(function (result) {
+        if(result){
+          console.log(chalk.bgGreen.white('** AUTO RETWEETED ** ' + result.data.text));
+        }
+      });
+  };
+
+  if(data){
+    if(data.length > 0){
+      rTweet = utils.randomItem(data);
+
+      try{
+        var dataT = utils.getInfoOfTweet(rTweet);
+        if(dataT.text !== ''){
+          doTweet(dataT);
+        }else{
+          getTweetOfUser(data);
+        }
+      }catch(e){
+        getTweetOfUser(data);
+      }
+    }
+  }else{
+
+    var user = utils.randomItem(config.ACCOUNT_TO_RETWEET);
 
     T.get('statuses/user_timeline', { screen_name : user})
-      .catch(function (err) {
-          console.log('caught error', err.stack)
-        })
+      .catch(reset)
       .then(function (result) {
         if(result){
           var data = result.data;
           if(data.length > 0){
-            var tweets = __.pluck(data, 'id_str');
-            var rTweet = utils.randomItem(tweets);
 
-            T.post('statuses/retweet/:id', { id: rTweet })
-            .catch(reset)
-            .then(function (result) {
-              if(result){
-                console.log(chalk.bgGreen.white('** AUTO RETWEETED ** ' + result.data.text));
+            rTweet = utils.randomItem(data);
+
+            try{
+              var dataT = utils.getInfoOfTweet(rTweet);
+              if(dataT.text !== ''){
+                doTweet(dataT);
+              }else{
+                getTweetOfUser(data);
               }
-            });
+            }catch(e){
+              getTweetOfUser(data);
+            }
 
           }
         }
 
       });
+  }
 
 }
 
@@ -181,61 +196,26 @@ function worker(){
     var tweet = tweetsArr[0];
     tweetsArr.shift();
 
-    var idTweet = null;
-    var userToFollow = null;
-    var tt = '';
-
     try{
 
-      if(tweet.quoted_status){
-        if(!tweet.quoted_status.retweeted){
-          idTweet = tweet.quoted_status.id_str;
-          userToFollow = tweet.quoted_status.user.screen_name;
-          if(tweet.quoted_status.truncated){
-            tt = tweet.quoted_status.extended_tweet.full_text;
-          }else{
-            tt = tweet.quoted_status.text;
-          }
+      var infos = utils.getInfoOfTweet(tweet);
 
-        }
-      }else if(tweet.retweeted_status){
-        if(!tweet.retweeted_status.retweeted){
-          idTweet = tweet.retweeted_status.id_str;
-          userToFollow = tweet.retweeted_status.user.screen_name;
-          if(tweet.retweeted_status.truncated){
-            tt = tweet.retweeted_status.extended_tweet.full_text;
-          }else{
-            tt = tweet.retweeted_status.text;
-          }
-        }
-      }else{
-        if(!tweet.retweeted){
-          idTweet = tweet.id_str;
-          userToFollow = tweet.user.screen_name;
-          if(tweet.truncated){
-            tt = tweet.extended_tweet.full_text;
-          }else{
-            tt = tweet.text;
-          }
-        }
-      }
-
-      if(idTweet && userToFollow){
+      if(infos.idTweet && infos.userToFollow){
         console.log(chalk.bgBlack.green.bold('\n\n############################## A TWITTER ##############################\n'));
-        console.log(chalk.bgBlack.green.bold('--- je dois rewetter : ' +idTweet + ' et suivre : '+userToFollow+'\n' + tt));
+        console.log(chalk.bgBlack.green.bold('--- je dois rewetter : ' +infos.idTweet + ' et suivre : '+infos.userToFollow+'\n' + infos.text));
         console.log(chalk.bgBlack.green.bold('\n#########################################################################'));
 
-        T.post('statuses/retweet/:id', { id: idTweet })
+        T.post('statuses/retweet/:id', { id: infos.idTweet })
           .catch(function (err) {
               if(err.allErrors){
                 if(err.allErrors[0].code === 327){
                   //You have already retweeted this Tweet.
-                  addDataToFile(idTweet);
-                  setTimeout(() => worker(), config.RETWEET_TIMEOUT);
+                  addDataToFile(infos.idTweet);
                 }else{
                   console.log('RETWEET error', err);
                 }
               }
+              setTimeout(() => worker(), config.RETWEET_TIMEOUT);
 
             })
           .then(function (result) {
@@ -255,14 +235,14 @@ function worker(){
               }
               console.log(chalk.bgGreen.white.bold('** RETWEETED ** ' + data.text));
 
-              if(userToFollow){
-                var usernames = twitter.extractMentions(tt);
-                if(usernames.indexOf(userToFollow) == -1){
-                  usernames.push(userToFollow);
+              if(infos.userToFollow){
+                var usernames = twitter.extractMentions(infos.text);
+                if(usernames.indexOf(infos.userToFollow) == -1){
+                  usernames.push(infos.userToFollow);
                 }
 
-                if(__.indexOf(usernames, userToFollow) == -1){
-                  usernames.push(userToFollow);
+                if(__.indexOf(usernames, infos.userToFollow) == -1){
+                  usernames.push(infos.userToFollow);
 
                 }
 
@@ -277,20 +257,23 @@ function worker(){
                     .catch(reset)
                     .then(function (result) {
                       if(result){
-                        friends.push(result.data.screen_name);
+                        friends.unshift(result.data.screen_name);
+                        if(friends.length > 1950){
+                          destroyFriend();
+                        }
                         console.log(chalk.bgGreen.white.bold('** FOLLOWED ** ' + result.data.screen_name));
                       }
                     });
                 }
               }
 
-              if(tt && userToFollow){
+              if(infos.text && infos.userToFollow){
 
-                var ttLow = tt.toLowerCase();
+                var ttLow = infos.text.toLowerCase();
                 //Check if we should Like (favorite) the Tweet
                 if (ttLow.indexOf('fav') > -1 || ttLow.indexOf('like') > -1 || ttLow.indexOf('aime') > -1) {
 
-                  T.post('favorites/create', { id: idTweet })
+                  T.post('favorites/create', { id: infos.idTweet })
                   .catch(reset)
                   .then(function (result) {
                     if(result){
@@ -303,9 +286,9 @@ function worker(){
                 //Check if we should Reply
                 if (ttLow.indexOf('reply') > -1) {
                   var emo = utils.randomItem(config.EMOJIS);
-                  var text = "@"+userToFollow+" Je participe ! "+emo;
+                  var text = "@"+infos.userToFollow+" Je participe ! "+emo;
 
-                  T.post('statuses/update', { status: text, in_reply_to_status_id: idTweet })
+                  T.post('statuses/update', { status: text, in_reply_to_status_id: infos.idTweet })
                     .catch(reset)
                     .then(function (result) {
                       if(result){
@@ -319,9 +302,9 @@ function worker(){
                   var friends1 = utils.randomItem(friends);
                   var friends2 = utils.randomItem(friends);
                   var emo = utils.randomItem(config.EMOJIS);
-                  var text = "@"+userToFollow+" Je participe ! et je tag @"+friends1+" & @"+friends2+" "+emo;
+                  var text = "@"+infos.userToFollow+" Je participe ! et je tag @"+friends1+" & @"+friends2+" "+emo;
 
-                  T.post('statuses/update', { status: text, in_reply_to_status_id: idTweet })
+                  T.post('statuses/update', { status: text, in_reply_to_status_id: infos.idTweet })
                     .catch(reset)
                     .then(function (result) {
                       if(result){
@@ -353,6 +336,18 @@ function worker(){
 
 }
 
+function destroyFriend(){
+
+  T.post('friendships/destroy', { screen_name: friends.pop() })
+  .catch(function(err){
+    console.error(err);
+  })
+  .then(function(result){
+    console.log(chalk.bgGreen.black.bold('friendships/destroy ** UNFOLLOW +**' + result.data.screen_name));
+  });
+
+}
+
 function reset(err){
 
   console.error('error', err);
@@ -368,7 +363,7 @@ function reset(err){
           console.log('application/rate_limit_status', data);
           console.log('/statuses/retweets/:id', data.resources.statuses['/statuses/retweets/:id']);
           console.log('/application/rate_limit_status', data.resources.application['/application/rate_limit_status']);
-          var time = data.resources.application['/statuses/retweets/:id'].reset;
+          var time = data.resources.statuses['/statuses/retweets/:id'].reset;
           var startDate = new Date();
           var endDate   = new Date(time*1000);
           var milliseconds = (endDate.getTime() - startDate.getTime());
@@ -376,6 +371,7 @@ function reset(err){
           setTimeout(function(){
             limitLockout = false;
             worker();
+            console.log(chalk.bgGreen.black.bold('STARTING Script'));
           }, milliseconds);
         }
       });
