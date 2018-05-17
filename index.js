@@ -19,10 +19,10 @@ var app = express()
 app.get('/', function (req, res) {
   res.send('API is running')
 })
+const PORT = process.env.PORT || 5000;
+app.listen(PORT)
 
-app.listen(process.env.PORT || 5000)
-
-console.log(chalk.green('APP LISTEN TO '+process.env.PORT+' port'));
+console.log(chalk.green('APP LISTEN TO '+PORT+' port'));
 
 //use to lock the script is the API limit is reach
 var limitLockout = false;
@@ -84,7 +84,7 @@ function getAllFriends(next){
   T.get('friends/list', { count : 200, cursor : next })
     .catch(reset)
     .then(function (result) {
-
+      console.log('result getAllFriends ', result);
       if(result){
         var data = result.data;
         var users = data.users;

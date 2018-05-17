@@ -37,6 +37,12 @@ documentation sur le streaming (utiliser pour la recherche) : https://developer.
 //lancer le process
 heroku ps:scale web=1
 
+//voir les process
+heroku ps
+
+//stopper un process (web.1 = nom du process obtenu via heroku ps)
+heroku ps:stop web.1
+
 //voir les logs
 heroku logs --tail
 
