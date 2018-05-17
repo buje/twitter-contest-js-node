@@ -9,10 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^2.4.1",
+    "dotenv": "^5.0.1",
+    "fs": "0.0.1-security",
     "twit": "^2.2.9",
     "twitter-text": "^2.0.4",
-    "underscore": "^1.0.9",
-    "fs": "0.0.1-security",
-    "chalk": "^2.4.1"
+    "underscore": "^1.0.9"
   }
 }
