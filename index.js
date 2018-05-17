@@ -84,7 +84,6 @@ function getAllFriends(next){
   T.get('friends/list', { count : 200, cursor : next })
     .catch(reset)
     .then(function (result) {
-      console.log('result getAllFriends ', result);
       if(result){
         var data = result.data;
         var users = data.users;
@@ -131,7 +130,7 @@ function addDataToFile(tweetToSave){
       if(exists){
           fs.readFile('tweets.json', function readFileCallback(err, data){
             if (err){
-                console.log(err);
+                console.log('tweets.json',err);
             } else {
               tweetsData = JSON.parse(data);
               addData();
@@ -373,7 +372,7 @@ function destroyFriend(){
 
 function reset(err){
 
-  console.error('error', err);
+  console.error('reset error', err);
 
   if(err.allErrors){
     if(err.allErrors[0].code === 88){
@@ -381,7 +380,7 @@ function reset(err){
 
       T.get('application/rate_limit_status', { resources : 'application,statuses'}, function (err, data, response) {
         if(err){
-          console.error(err);
+          console.error('err application/rate_limit_status', err);
         }else{
           console.log('application/rate_limit_status', data);
           console.log('/statuses/retweets/:id', data.resources.statuses['/statuses/retweets/:id']);
