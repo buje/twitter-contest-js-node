@@ -20,9 +20,9 @@ app.get('/', function (req, res) {
   res.send('API is running')
 })
 
-app.listen(3000)
+app.listen(process.env.PORT || 5000)
 
-console.log(chalk.green('APP LISTEN TO 3000 port'));
+console.log(chalk.green('APP LISTEN TO '+process.env.PORT+' port'));
 
 //use to lock the script is the API limit is reach
 var limitLockout = false;

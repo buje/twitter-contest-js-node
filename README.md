@@ -30,3 +30,20 @@ information about limit : https://help.twitter.com/fr/rules-and-policies/twitter
  1 000 abonnement par jour //TODO
 
 documentation sur le streaming (utiliser pour la recherche) : https://developer.twitter.com/en/docs/tweets/filter-realtime/guides/connecting.html
+
+
+## Heroku help
+
+//lancer le process
+heroku ps:scale web=1
+
+//voir les logs
+heroku logs --tail
+
+//ouvrir la console
+heroku run bash
+
+//installer vim
+https://gist.github.com/dvdbng/7375821b20f189c189ab1bd29392c98e
+
+heroku open
