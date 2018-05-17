@@ -1,7 +1,13 @@
 
 #### Go here to create an app and get OAuth credentials (if you haven't already): https://dev.twitter.com/apps/new
-#### Rename config_tmp.js to config.js
-#### Add your APP key to config.js file
+
+### .env file
+Create .env file with your access_token / consumer_key
+
+CONSUMER_KEY=<your_key_here>
+CONSUMER_SECRET=<your_key_here>
+ACCESS_TOKEN=<your_key_here>
+ACCESS_TOKEN_SECRET=<your_key_here>
 
 ## RUN
 

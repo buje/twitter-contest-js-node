@@ -40,9 +40,13 @@ function start(){
 
         if(tweetsData.data.indexOf(idTweet) > -1){
           console.log('\n\n'+chalk.red('@@@@@@@@@@@@@@@@@ #'+chalk.blue(idTweet)+' Déjà Retweeter @@@@@@@@@@@@@@@@@'));
+          tweetsArr = __.reject(tweetsArr, function(tweet){
+            return idTweet == utils.getInfoOfTweet(tweet).idTweet;
+          });
+          console.log('\n\n'+chalk.red(tweetsArr.length+' restants à traiter'));
           return false;
         }else{
-          console.log('\n\n'+chalk.green('************* NEW Tweet found, adding to list *************'));
+          console.log('\n\n'+chalk.green('************* #'+chalk.green(idTweet)+' NEW Tweet found, adding to list *************'));
           tweetsArr.push(tweet);
           console.log('\n\n'+chalk.blue(tweetsArr.length+' restants à traiter'));
         }
@@ -211,6 +215,9 @@ function worker(){
                 if(err.allErrors[0].code === 327){
                   //You have already retweeted this Tweet.
                   addDataToFile(infos.idTweet);
+                  tweetsArr = __.reject(tweetsArr, function(tweet){
+                    return infos.idTweet == utils.getInfoOfTweet(tweet).idTweet;
+                  });
                 }else{
                   console.log('RETWEET error', err);
                 }
@@ -258,7 +265,7 @@ function worker(){
                     .then(function (result) {
                       if(result){
                         friends.unshift(result.data.screen_name);
-                        if(friends.length > 1950){
+                        if(friends.length > 4950){
                           destroyFriend();
                         }
                         console.log(chalk.bgGreen.white.bold('** FOLLOWED ** ' + result.data.screen_name));
