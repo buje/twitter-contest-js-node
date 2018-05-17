@@ -53,23 +53,23 @@ function start(){
       try{
 
         var idTweet = utils.getInfoOfTweet(tweet).idTweet;
-
-        if(tweetsData.data.indexOf(idTweet) > -1){
-          console.log('\n\n'+chalk.red('@@@@@@@@@@@@@@@@@ #'+chalk.blue(idTweet)+' Déjà Retweeter @@@@@@@@@@@@@@@@@'));
-          tweetsArr = __.reject(tweetsArr, function(tweet){
-            return idTweet == utils.getInfoOfTweet(tweet).idTweet;
-          });
-          console.log('\n\n'+chalk.red(tweetsArr.length+' restants à traiter'));
-          return false;
-        }else{
-          console.log('\n\n'+chalk.green('************* #'+chalk.green(idTweet)+' NEW Tweet found, adding to list *************'));
-          tweetsArr.push(tweet);
-          console.log('\n\n'+chalk.blue(tweetsArr.length+' restants à traiter'));
+        if(idTweet){
+          if(tweetsData.data.indexOf(idTweet) > -1){
+            console.log('\n\n'+chalk.red('@@@@@@@@@@@@@@@@@ #'+chalk.blue(idTweet)+' Déjà Retweeter @@@@@@@@@@@@@@@@@'));
+            tweetsArr = __.reject(tweetsArr, function(tweet){
+              return idTweet == utils.getInfoOfTweet(tweet).idTweet;
+            });
+            console.log('\n\n'+chalk.red(tweetsArr.length+' restants à traiter'));
+          }else{
+            console.log('\n\n'+chalk.green('************* #'+chalk.green(idTweet)+' NEW Tweet found, adding to list *************'));
+            tweetsArr.push(tweet);
+            console.log('\n\n'+chalk.blue(tweetsArr.length+' restants à traiter'));
+          }
         }
 
       }catch(e){
         console.error('ERROR  '+ e+'\n\n');
-        console.error(tweet);
+        console.error('tweet', tweet);
       }
 
   });
