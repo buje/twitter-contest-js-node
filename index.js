@@ -13,6 +13,17 @@ const config = require('./config');
 const utils = require('./utils');
 const T = new Twit(config.auth);
 
+var express = require('express')
+var app = express()
+
+app.get('/', function (req, res) {
+  res.send('API is running')
+})
+
+app.listen(3000)
+
+console.log(chalk.green('APP LISTEN TO 3000 port'));
+
 //use to lock the script is the API limit is reach
 var limitLockout = false;
 //count tweet retweeted
