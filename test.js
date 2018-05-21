@@ -1,4 +1,4 @@
-var Twit = require('twit');
+var Twit = require('twit-promise-fix');
 var twitter = require('twitter-text');
 var __ = require('underscore')._;
 var fs = require('fs');
