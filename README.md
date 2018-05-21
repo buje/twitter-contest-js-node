@@ -36,6 +36,9 @@ documentation sur le streaming (utiliser pour la recherche) : https://developer.
 
 ## Heroku help
 
+//push modif
+git push heroku master
+
 //lancer le process
 heroku ps:scale web=1
 

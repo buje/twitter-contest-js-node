@@ -15,12 +15,21 @@ const T = new Twit(config.auth);
 
 var express = require('express')
 var app = express()
+var http = require('http');
 
 app.get('/', function (req, res) {
-  res.send('API is running')
+  res.send('API is running on env '+process.env.NODE_ENV)
 })
 const PORT = process.env.PORT || 5000;
 app.listen(PORT)
+
+if(process.env.NODE_ENV == 'production'){
+  console.log(chalk.green("SET INTERVAL FOR HEROKU http://"+process.env.HEROKU_APP_NAME+".herokuapp.com"));
+  setInterval(function() {
+      console.log(chalk.green('PING HEROKU'));
+      http.get("http://"+process.env.HEROKU_APP_NAME+".herokuapp.com");
+  }, 300000); // every 5 minutes (300000)
+}
 
 console.log(chalk.green('APP LISTEN TO '+PORT+' port'));
 

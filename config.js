@@ -14,8 +14,8 @@ const config = {
   //RETWEET_TIMEOUT: 1000 * 60,
   RETWEET_TIMEOUT: 1000 * 60 * 2,
 
-  // 30 seconds for Search Timeout
-  RATE_SEARCH_TIMEOUT: 1000 * 30,
+  // 60*5 seconds for Search Timeout
+  RATE_SEARCH_TIMEOUT: 1000 * 60 * 5,
 
   ACCOUNT_TO_RETWEET : ['lemondefr', 'BFMTV', '20Minutes', 'Le_Figaro', 'libe'],
 
