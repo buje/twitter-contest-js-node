@@ -1,3 +1,5 @@
+//TODO
+//control your app so that it doesn't exceed 450 requests in a 15 minute interval.
 
 #### Go here to create an app and get OAuth credentials (if you haven't already): https://dev.twitter.com/apps/new
 
@@ -43,6 +45,9 @@ heroku ps
 //stopper un process (web.1 = nom du process obtenu via heroku ps)
 heroku ps:stop web.1
 
+//stopper complètement
+heroku ps:scale web=0
+
 //voir les logs
 heroku logs --tail
 
@@ -53,3 +58,6 @@ heroku run bash
 https://gist.github.com/dvdbng/7375821b20f189c189ab1bd29392c98e
 
 heroku open
+
+
+Twitter API https://developer.twitter.com/en/docs

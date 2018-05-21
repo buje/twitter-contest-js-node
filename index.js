@@ -55,15 +55,15 @@ function start(){
         var idTweet = utils.getInfoOfTweet(tweet).idTweet;
         if(idTweet){
           if(tweetsData.data.indexOf(idTweet) > -1){
-            console.log('\n\n'+chalk.red('@@@@@@@@@@@@@@@@@ #'+chalk.blue(idTweet)+' Déjà Retweeter @@@@@@@@@@@@@@@@@'));
+            console.log('\n\n'+chalk.red('@@@@@@@@@@@@@@@@@ #'+chalk.blue(idTweet)+' already retweet @@@@@@@@@@@@@@@@@'));
             tweetsArr = __.reject(tweetsArr, function(tweet){
               return idTweet == utils.getInfoOfTweet(tweet).idTweet;
             });
-            console.log('\n\n'+chalk.red(tweetsArr.length+' restants à traiter'));
+            console.log('\n\n'+chalk.red(tweetsArr.length+' in tweet\'s queue'));
           }else{
             console.log('\n\n'+chalk.green('************* #'+chalk.green(idTweet)+' NEW Tweet found, adding to list *************'));
             tweetsArr.push(tweet);
-            console.log('\n\n'+chalk.blue(tweetsArr.length+' restants à traiter'));
+            console.log('\n\n'+chalk.blue(tweetsArr.length+' in tweet\'s queue'));
           }
         }
 
@@ -95,7 +95,7 @@ function getAllFriends(next){
             console.log(chalk.bgBlue.white('friendsTmp ' + friendsTmp.length + ' friends ' +friends.length));
             getAllFriends(next);
           }else{
-            console.log(chalk.bgBlack.white('LANCEMENT DU WORKER !!!'));
+            console.log(chalk.bgBlack.white('STARTING WORKER !!!'));
             worker();
           }
 
@@ -210,7 +210,7 @@ function worker(){
 
   if(tweetsArr.length > 0){
 
-    console.log(chalk.yellow('\n\n'+ tweetsArr.length+' restants à traiter'));
+    console.log(chalk.yellow('\n\n'+ tweetsArr.length+' tweets in queue'));
 
     var tweet = tweetsArr[0];
     tweetsArr.shift();
@@ -221,7 +221,7 @@ function worker(){
 
       if(infos.idTweet && infos.userToFollow){
         console.log(chalk.bgBlack.green.bold('\n\n############################## A TWITTER ##############################\n'));
-        console.log(chalk.bgBlack.green.bold('--- je dois rewetter : ' +infos.idTweet + ' et suivre : '+infos.userToFollow+'\n' + infos.text));
+        console.log(chalk.bgBlack.green.bold('--- i must retweet : ' +infos.idTweet + ' and follow : '+infos.userToFollow+'\n' + infos.text));
         console.log(chalk.bgBlack.green.bold('\n#########################################################################'));
 
         T.post('statuses/retweet/:id', { id: infos.idTweet })
@@ -273,7 +273,7 @@ function worker(){
 
               for(var i = 0; i < usernamesT.length; i++){
                 if(friends.indexOf(usernamesT[i]) > -1){
-                  console.log(chalk.bgRedBright.black('\n\n--------------'+usernamesT[i]+' Déjà Following --------------'));
+                  console.log(chalk.bgRedBright.black('\n\n--------------'+usernamesT[i]+' already following --------------'));
                 }else{
                   T.post('friendships/create', { screen_name: usernamesT[i] })
                     .catch(reset)
@@ -299,7 +299,7 @@ function worker(){
                   .catch(reset)
                   .then(function (result) {
                     if(result){
-                      console.log(chalk.bgGreen.white.bold('** FAVORIS ** ' + result.data.text));
+                      console.log(chalk.bgGreen.white.bold('** FAVORITE ** ' + result.data.text));
                     }
                   });
 
@@ -373,32 +373,29 @@ function destroyFriend(){
 function reset(err){
 
   console.error('reset error', err);
+  if(limitLockout){
+    return false;
+  }
 
   if(err.allErrors){
-    if(err.allErrors[0].code === 88){
-      limitLockout = true;
+    if(err.allErrors.length > 0){
+      if(err.allErrors[0].code === 88){
+        limitLockout = true;
 
-      T.get('application/rate_limit_status', { resources : 'application,statuses'}, function (err, data, response) {
-        if(err){
-          console.error('err application/rate_limit_status', err);
-        }else{
-          console.log('application/rate_limit_status', data);
-          console.log('/statuses/retweets/:id', data.resources.statuses['/statuses/retweets/:id']);
-          console.log('/application/rate_limit_status', data.resources.application['/application/rate_limit_status']);
-          var time = data.resources.statuses['/statuses/retweets/:id'].reset;
-          var startDate = new Date();
-          var endDate   = new Date(time*1000);
-          var milliseconds = (endDate.getTime() - startDate.getTime());
-          console.log(chalk.bgRed.yellow.bold('RESTART Script in ' + (milliseconds/1000/60) +' minutes'));
-          setTimeout(function(){
-            limitLockout = false;
-            worker();
-            console.log(chalk.bgGreen.black.bold('STARTING Script'));
-          }, milliseconds);
-        }
-      });
+        var nbMinutes = 15;
+        var restart = 1000*60*nbMinutes;
+        console.log(chalk.bgRed.yellow.bold('RESTART Script in ' + nbMinutes +' minutes'));
+        setTimeout(function(){
+          limitLockout = false;
+          worker();
+          console.log(chalk.bgGreen.black.bold('STARTING Script'));
+        }, restart);
 
+      }
+    }else{
+      setTimeout(() => worker(), config.RATE_SEARCH_TIMEOUT);
     }
+
   }
 
 }
