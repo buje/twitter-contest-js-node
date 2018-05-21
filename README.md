@@ -15,8 +15,6 @@ ACCESS_TOKEN_SECRET=<your_key_here>
 
 `npm install`
 
-Apply this fix to twit package : FIX Promises : https://github.com/ttezel/twit/pull/297
-
 `node index.js`
 
 

@@ -390,23 +390,21 @@ function reset(err){
     return false;
   }
 
+  limitLockout = true;
+  console.log(chalk.bgRed.yellow.bold('RESTART Script in ' + RATE_LIMIT_EXCEEDED_TIMEOUT/1000/60 +' minutes'));
+  setTimeout(function(){
+    limitLockout = false;
+    worker();
+    console.log(chalk.bgGreen.black.bold('STARTING Script'));
+  }, config.RATE_LIMIT_EXCEEDED_TIMEOUT);
+
   if(err.allErrors){
     if(err.allErrors.length > 0){
       if(err.allErrors[0].code === 88){
-        limitLockout = true;
-
-        var nbMinutes = 15;
-        var restart = 1000*60*nbMinutes;
-        console.log(chalk.bgRed.yellow.bold('RESTART Script in ' + nbMinutes +' minutes'));
-        setTimeout(function(){
-          limitLockout = false;
-          worker();
-          console.log(chalk.bgGreen.black.bold('STARTING Script'));
-        }, restart);
-
+        console.log(chalk.bgRed.yellow.bold('CODE 88'));
       }
     }else{
-      setTimeout(() => worker(), config.RATE_SEARCH_TIMEOUT);
+      console.log(chalk.bgRed.yellow.bold('CODE UNKNOW'));
     }
 
   }
