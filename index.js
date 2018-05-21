@@ -391,11 +391,11 @@ function reset(err){
   }
 
   limitLockout = true;
-  console.log(chalk.bgRed.yellow.bold('RESTART Script in ' + RATE_LIMIT_EXCEEDED_TIMEOUT/1000/60 +' minutes'));
+  console.log(chalk.bgRed.yellow.bold('RESTART Script in ' + config.RATE_LIMIT_EXCEEDED_TIMEOUT/1000/60 +' minutes'));
   setTimeout(function(){
     limitLockout = false;
     worker();
-    console.log(chalk.bgGreen.black.bold('STARTING Script'));
+    console.log(chalk.bgGreen.black.bold('RE STARTING Script'));
   }, config.RATE_LIMIT_EXCEEDED_TIMEOUT);
 
   if(err.allErrors){

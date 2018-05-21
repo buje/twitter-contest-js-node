@@ -10,7 +10,7 @@ const config = {
   // 15 minutes timeout for limit exceeded
   RATE_LIMIT_EXCEEDED_TIMEOUT: 1000 * 60 * 15,
 
-  // 60 seconds timeout for Retweets
+  // 60*2 seconds timeout for Retweets
   //RETWEET_TIMEOUT: 1000 * 60,
   RETWEET_TIMEOUT: 1000 * 60 * 2,
 
