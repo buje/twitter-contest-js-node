@@ -96,18 +96,22 @@ function getAllFriends(next){
       if(result){
         var data = result.data;
         var users = data.users;
-        if(users.length > 0){
-          var friendsTmp = __.pluck(users, 'screen_name');
-          friends = __.union(friends, friendsTmp);
-          next = result.data.next_cursor;
-          if(next > 0){
-            console.log(chalk.bgBlue.white('friendsTmp ' + friendsTmp.length + ' friends ' +friends.length));
-            getAllFriends(next);
-          }else{
-            console.log(chalk.bgBlack.white('STARTING WORKER !!!'));
-            worker();
-          }
+        if(users){
+          if(users.length > 0){
+            var friendsTmp = __.pluck(users, 'screen_name');
+            friends = __.union(friends, friendsTmp);
+            next = result.data.next_cursor;
+            if(next > 0){
+              console.log(chalk.bgBlue.white('friendsTmp ' + friendsTmp.length + ' friends ' +friends.length));
+              getAllFriends(next);
+            }else{
+              console.log(chalk.bgBlack.white('STARTING WORKER !!!'));
+              worker();
+            }
 
+          }
+        }else{
+          console.err('ERROR in getting friends/list ', result);
         }
       }
 
