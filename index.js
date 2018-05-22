@@ -50,9 +50,12 @@ var tweetsData = {
   data : []
 };
 
+var friendsLoop = 0;
+var next = -1;
+
 function start(){
 
-  getAllFriends();
+  getAllFriends(next);
   addDataToFile();
 
   var stream = T.stream('statuses/filter', { track: config.TEXT_TO_SEARCH, language: config.LANGUAGE });
@@ -85,11 +88,8 @@ function start(){
 
 }
 
-function getAllFriends(next){
+function getAllFriends(){
 
-  if(!next){
-    next = -1;
-  }
   T.get('friends/list', { count : 200, cursor : next })
     .catch(reset)
     .then(function (result) {
@@ -101,12 +101,24 @@ function getAllFriends(next){
             var friendsTmp = __.pluck(users, 'screen_name');
             friends = __.union(friends, friendsTmp);
             next = result.data.next_cursor;
+            friendsLoop++;
             if(next > 0){
-              console.log(chalk.bgBlue.white('friendsTmp ' + friendsTmp.length + ' friends ' +friends.length));
-              getAllFriends(next);
+              if(friendsLoop >= 14){
+                console.log(chalk.bgBlack.white('STARTING WORKER !!! friendsLoop ' + friendsLoop));
+                worker();
+                setTimeout(function(){
+                  //get rest of friends in 16 min
+                  getAllFriends();
+                }, 1000*60*16);
+              }else{
+                console.log(chalk.bgBlue.white('friendsTmp ' + friendsTmp.length + ' friends ' +friends.length +' friendsLoop ' + friendsLoop));
+                getAllFriends();
+              }
             }else{
-              console.log(chalk.bgBlack.white('STARTING WORKER !!!'));
-              worker();
+              if(friendsLoop < 14){
+                console.log(chalk.bgBlack.white('STARTING WORKER !!!'));
+                worker();
+              }
             }
 
           }
@@ -159,13 +171,15 @@ function addDataToFile(tweetToSave){
 function getTweetOfUser(data){
 
   var doTweet = function(data){
-    T.post('statuses/update', { status: data.text })
-      .catch(reset)
-      .then(function (result) {
-        if(result){
-          console.log(chalk.bgGreen.white('** AUTO RETWEETED ** ' + result.data.text));
-        }
-      });
+      setTimeout(function(data){
+        T.post('statuses/update', { status: data.text })
+          .catch(reset)
+          .then(function (result) {
+            if(result){
+              console.log(chalk.bgGreen.white('** AUTO RETWEETED ** ' + result.data.text));
+            }
+          });
+      }, config.RETWEET_TIMEOUT, data);
   };
 
   if(data){
@@ -288,17 +302,19 @@ function worker(){
                 if(friends.indexOf(usernamesT[i]) > -1){
                   console.log(chalk.bgRedBright.black('\n\n--------------'+usernamesT[i]+' already following --------------'));
                 }else{
-                  T.post('friendships/create', { screen_name: usernamesT[i] })
-                    .catch(reset)
-                    .then(function (result) {
-                      if(result){
-                        friends.unshift(result.data.screen_name);
-                        if(friends.length > 4950){
-                          destroyFriend();
+                  setTimeout(function(name){
+                    T.post('friendships/create', { screen_name: name })
+                      .catch(reset)
+                      .then(function (result) {
+                        if(result){
+                          friends.unshift(result.data.screen_name);
+                          if(friends.length > 4950){
+                            destroyFriend();
+                          }
+                          console.log(chalk.bgGreen.white.bold('** FOLLOWED ** ' + result.data.screen_name));
                         }
-                        console.log(chalk.bgGreen.white.bold('** FOLLOWED ** ' + result.data.screen_name));
-                      }
-                    });
+                      });
+                  }, config.RETWEET_TIMEOUT, usernamesT[i]);
                 }
               }
 
@@ -308,44 +324,52 @@ function worker(){
                 //Check if we should Like (favorite) the Tweet
                 if (ttLow.indexOf('fav') > -1 || ttLow.indexOf('like') > -1 || ttLow.indexOf('aime') > -1) {
 
-                  T.post('favorites/create', { id: infos.idTweet })
-                  .catch(reset)
-                  .then(function (result) {
-                    if(result){
-                      console.log(chalk.bgGreen.white.bold('** FAVORITE ** ' + result.data.text));
-                    }
-                  });
+                  setTimeout(function(idTweet){
+                    T.post('favorites/create', { id: idTweet })
+                    .catch(reset)
+                    .then(function (result) {
+                      if(result){
+                        console.log(chalk.bgGreen.white.bold('** FAVORITE ** ' + result.data.text));
+                      }
+                    });
+                  }, config.RETWEET_TIMEOUT, infos.idTweet);
 
                 }
 
                 //Check if we should Reply
                 if (ttLow.indexOf('reply') > -1) {
-                  var emo = utils.randomItem(config.EMOJIS);
-                  var text = "@"+infos.userToFollow+" Je participe ! "+emo;
 
-                  T.post('statuses/update', { status: text, in_reply_to_status_id: infos.idTweet })
-                    .catch(reset)
-                    .then(function (result) {
-                      if(result){
-                        console.log(chalk.bgGreen.white.bold('** REPLY ** ' + result.data.text));
-                      }
-                    });
+                    setTimeout(function(infos){
+                      var emo = utils.randomItem(config.EMOJIS);
+                      var text = "@"+infos.userToFollow+" Je participe ! "+emo;
+
+                      T.post('statuses/update', { status: text, in_reply_to_status_id: infos.idTweet })
+                        .catch(reset)
+                        .then(function (result) {
+                          if(result){
+                            console.log(chalk.bgGreen.white.bold('** REPLY ** ' + result.data.text));
+                          }
+                        });
+                    }, config.RETWEET_TIMEOUT, infos);
 
                 }
 
                 if (ttLow.indexOf('mentionne') > -1 || ttLow.indexOf('tag ') > -1 || ttLow.indexOf('tagguez') > -1 || ttLow.indexOf('taguez') > -1) {
-                  var friends1 = utils.randomItem(friends);
-                  var friends2 = utils.randomItem(friends);
-                  var emo = utils.randomItem(config.EMOJIS);
-                  var text = "@"+infos.userToFollow+" Je participe ! et je tag @"+friends1+" & @"+friends2+" "+emo;
 
-                  T.post('statuses/update', { status: text, in_reply_to_status_id: infos.idTweet })
-                    .catch(reset)
-                    .then(function (result) {
-                      if(result){
-                        console.log(chalk.bgGreen.white.bold('** TAG ** @'+friends1+' & @'+friends2+" "+ result.data.text));
-                      }
-                    });
+                  setTimeout(function(infos){
+                    var friends1 = utils.randomItem(friends);
+                    var friends2 = utils.randomItem(friends);
+                    var emo = utils.randomItem(config.EMOJIS);
+                    var text = "@"+infos.userToFollow+" Je participe ! et je tag @"+friends1+" & @"+friends2+" "+emo;
+
+                    T.post('statuses/update', { status: text, in_reply_to_status_id: infos.idTweet })
+                      .catch(reset)
+                      .then(function (result) {
+                        if(result){
+                          console.log(chalk.bgGreen.white.bold('** TAG ** @'+friends1+' & @'+friends2+" "+ result.data.text));
+                        }
+                      });
+                  }, config.RETWEET_TIMEOUT, infos);
 
                 }
 
