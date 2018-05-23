@@ -15,16 +15,16 @@ const T = new Twit(config.auth);
 
 function test(loop){
 
-
+var nb = 2000;
 var usernamesT = ['bibi', 'bubu', 'baba'];
 for(var i = 0; i < usernamesT.length; i++){
-
+    console.log(' declench in ' + parseInt(nb+(2000*i)));
     setTimeout(function(names, loop){
       console.log(chalk.bgGreen.white.bold('\n** '+loop+' FOLLOWED ** ' + names));
       if(names === "baba"){
-        test(utils.randomInt(0,10));
+        //test(utils.randomInt(0,10));
       }
-    }, utils.randomInt(0,5000), usernamesT[i], loop);
+    }, nb+(2000*i), usernamesT[i], loop);
 
 }
 }

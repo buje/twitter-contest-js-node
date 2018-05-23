@@ -60,6 +60,11 @@ function start(){
 
   var stream = T.stream('statuses/filter', { track: config.TEXT_TO_SEARCH, language: config.LANGUAGE });
 
+  stream.on('limit', function (limitMessage) {
+    console.log(chalk.red('⛔⛔⛔⛔ LIMIT ⛔⛔⛔⛔'), limitMessage);
+    reset(limitMessage);
+  });
+
   stream.on('tweet', function (tweet) {
 
       try{
@@ -260,11 +265,15 @@ function worker(){
                   tweetsArr = __.reject(tweetsArr, function(tweet){
                     return infos.idTweet == utils.getInfoOfTweet(tweet).idTweet;
                   });
+                  setTimeout(() => worker(), config.RETWEET_TIMEOUT);
                 }else{
                   console.log('RETWEET error', err);
+                  reset(err);
                 }
+              }else{
+                setTimeout(() => worker(), config.RETWEET_TIMEOUT);
               }
-              setTimeout(() => worker(), config.RETWEET_TIMEOUT);
+
 
             })
           .then(function (result) {
@@ -280,7 +289,10 @@ function worker(){
                 getTweetOfUser();
                 setTimeout(function(){
                   getTweetOfUser();
-                },1000 * 120);
+                },1000*60*2);
+                setTimeout(function(){
+                  getTweetOfUser();
+                },1000*60*3);
               }
               console.log(chalk.bgGreen.white.bold('** RETWEETED ** ' + data.text));
 
@@ -314,7 +326,7 @@ function worker(){
                           console.log(chalk.bgGreen.white.bold('** FOLLOWED ** ' + result.data.screen_name));
                         }
                       });
-                  }, config.RETWEET_TIMEOUT, usernamesT[i]);
+                  }, parseInt(config.RETWEET_TIMEOUT+(1000*60*i)), usernamesT[i]);
                 }
               }
 
@@ -389,7 +401,7 @@ function worker(){
     }
 
   }else{
-    console.log(chalk.bgRed.white('No more results. Will search and analyze again in '+ config.RATE_SEARCH_TIMEOUT / 1000 + ' seconds.'));
+    console.log(chalk.bgRed.white('No more results. Will search and analyze again in '+ config.RATE_SEARCH_TIMEOUT/1000/60 + ' minutes.'));
     setTimeout(() => worker(), config.RATE_SEARCH_TIMEOUT);
   }
 
@@ -409,7 +421,7 @@ function destroyFriend(){
 
 function reset(err){
 
-  console.error('reset error', err);
+  console.error('reset error  limitLockout ' + limitLockout, err);
   if(limitLockout){
     return false;
   }
