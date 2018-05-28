@@ -127,6 +127,9 @@ function getAllFriends(){
               }
             }
 
+          }else{
+            console.log(chalk.bgBlack.white('NO FIRENDS STARTING WORKER !!!'));
+            worker();
           }
         }else{
           console.err('ERROR in getting friends/list ', result);

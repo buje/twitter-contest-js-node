@@ -66,3 +66,33 @@ heroku open
 Twitter API https://developer.twitter.com/en/docs
 
 Keep heroku app alive http://kaffeine.herokuapp.com/#!
+
+heroku ps:scale web=0 --app <appname>
+PING HEROKU APP  http://kaffeine.herokuapp.com/
+
+Working with remote heroku : https://devcenter.heroku.com/articles/git#creating-a-heroku-remote
+
+## MEP BOT
+//create app <herokuappname> on heroku
+> heroku create <herokuappname>
+
+//rename branch heroku to <herokuappname>
+> git remote rename heroku <herokuappname>
+
+OR
+//create git branch heroku<twitter name> and kink to <herokuappname>
+> heroku<twitter name> git:remote -a <herokuappname>
+
+//change keys in .env file
+//to delete friends at firt (only for old account)
+> node destroy.js
+
+//add keys to <herokyappname> settings
+
+//push code on heroku
+> git push heroku<twitter name> master
+
+//start the bot
+> heroku ps:scale web=1 —app <herokuappname>
+
+PING HEROKU APP  http://kaffeine.herokuapp.com/

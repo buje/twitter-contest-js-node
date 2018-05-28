@@ -1,21 +1,30 @@
 var Twit = require('twit-promise-fix');
-var twitter = require('twitter-text');
 var __ = require('underscore')._;
-var fs = require('fs');
 var chalk = require('chalk');
 
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
 
-//FIX Promises :https://github.com/ttezel/twit/pull/297
 const config = require('./config');
-const utils = require('./utils');
 const T = new Twit(config.auth);
 
 var friends = [];
 var friendsLoop = 0;
 var next = -1;
+
+function destroyFriend(){
+
+  T.post('friendships/destroy', { screen_name: friends.pop() })
+  .catch(function(err){
+    console.error(err);
+  })
+  .then(function(result){
+    destroyFriend();
+    console.log(chalk.bgGreen.black.bold('friendships/destroy ** UNFOLLOW +**' + result.data.screen_name));
+  });
+
+}
 
 function getAllFriends(){
 
@@ -24,7 +33,6 @@ function getAllFriends(){
     .then(function (result) {
       if(result){
         var data = result.data;
-        console.error('data ', data);
         var users = data.users;
         if(users){
           if(users.length > 0){
@@ -35,7 +43,7 @@ function getAllFriends(){
             if(next > 0){
               if(friendsLoop >= 14){
                 console.log(chalk.bgBlack.white('STARTING WORKER !!! friendsLoop ' + friendsLoop));
-                //destroyFriend();
+                destroyFriend();
                 setTimeout(function(){
                   //get rest of friends in 16 min
                   getAllFriends();
@@ -47,7 +55,7 @@ function getAllFriends(){
             }else{
               if(friendsLoop < 14){
                 console.log(chalk.bgBlack.white('STARTING WORKER !!!'));
-                //destroyFriend();
+                destroyFriend();
               }
             }
 
