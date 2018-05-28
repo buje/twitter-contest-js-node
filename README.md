@@ -1,6 +1,3 @@
-//TODO
-//control your app so that it doesn't exceed 450 requests in a 15 minute interval.
-
 #### Go here to create an app and get OAuth credentials (if you haven't already): https://dev.twitter.com/apps/new
 
 ### .env file
@@ -10,6 +7,10 @@ CONSUMER_KEY=<your_key_here>
 CONSUMER_SECRET=<your_key_here>
 ACCESS_TOKEN=<your_key_here>
 ACCESS_TOKEN_SECRET=<your_key_here>
+
+MJ_APIKEY_PUBLIC=<mailjet_your_key_here>
+MJ_APIKEY_PRIVATE=<mailjet_your_key_here>
+MAIL=<your_email>
 
 ## RUN
 

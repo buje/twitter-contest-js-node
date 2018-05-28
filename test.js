@@ -22,10 +22,15 @@ for(var i = 0; i < usernamesT.length; i++){
     setTimeout(function(names, loop){
       console.log(chalk.bgGreen.white.bold('\n** '+loop+' FOLLOWED ** ' + names));
       if(names === "baba"){
-        //test(utils.randomInt(0,10));
+        test(utils.randomInt(0,10));
       }
     }, nb+(2000*i), usernamesT[i], loop);
 
 }
 }
-test(utils.randomInt(0,10));
+//test(utils.randomInt(0,10));
+
+setTimeout(() => {
+
+  //process.exit(1);
+}, 4000);

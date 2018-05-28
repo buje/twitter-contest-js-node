@@ -12,6 +12,7 @@ if (process.env.NODE_ENV !== 'production') {
 const config = require('./config');
 const utils = require('./utils');
 const T = new Twit(config.auth);
+const mailjet = require('node-mailjet').connect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
 
 var express = require('express')
 var app = express()
@@ -76,11 +77,11 @@ function start(){
             tweetsArr = __.reject(tweetsArr, function(tweet){
               return idTweet == utils.getInfoOfTweet(tweet).idTweet;
             });
-            console.log('\n\n'+chalk.red(tweetsArr.length+' in tweet\'s queue'));
+            console.log('\n\n'+chalk.red(tweetsArr.length+' in tweet\'s queue, limitLockout : ' + limitLockout));
           }else{
             console.log('\n\n'+chalk.green('************* #'+chalk.green(idTweet)+' NEW Tweet found, adding to list *************'));
             tweetsArr.push(tweet);
-            console.log('\n\n'+chalk.blue(tweetsArr.length+' in tweet\'s queue'));
+            console.log('\n\n'+chalk.blue(tweetsArr.length+' in tweet\'s queue, limitLockout : ' + limitLockout));
           }
         }
 
@@ -438,12 +439,49 @@ function reset(err){
     if(err.allErrors.length > 0){
       if(err.allErrors[0].code === 88){
         console.log(chalk.bgRed.yellow.bold('CODE 88'));
+      }else if(err.allErrors[0].code === 261){
+        console.log(chalk.bgRed.yellow.bold('CODE 261'));
+        //Application BOT IS BANNED, stop script
+        const request = mailjet
+            .post("send")
+            .request({
+            	FromEmail: process.env.MAIL,
+            	FromName: 'BOTS',
+            	Subject: 'Application error STOP',
+            	'Text-part': 'Twitter\'s bot application as stop at : '+new Date().toTimeString(),
+            	Recipients: [{'Email': process.env.MAIL}]
+          })
+        request
+            .then((result) => {
+                console.log(result.body)
+                process.exit(1);
+            })
+            .catch((err) => {
+                console.log(err.statusCode)
+            });
       }
     }else{
       console.log(chalk.bgRed.yellow.bold('CODE UNKNOW'));
     }
 
   }
+
+  const request = mailjet
+      .post("send")
+      .request({
+        FromEmail: process.env.MAIL,
+        FromName: 'BOTS',
+        Subject: 'Application error',
+        'Text-part': 'Twitter\'s bot application have an error : '+new Date().toTimeString()+'\n\n'+JSON.stringify(err),
+        Recipients: [{'Email': process.env.MAIL}]
+    })
+  request
+      .then((result) => {
+          console.log(result.body)
+      })
+      .catch((err) => {
+          console.log(err.statusCode)
+      });
 
 }
 
