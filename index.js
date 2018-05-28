@@ -447,7 +447,7 @@ function reset(err){
             .request({
             	FromEmail: process.env.MAIL,
             	FromName: 'BOTS',
-            	Subject: 'Application error STOP',
+            	Subject: 'Application error STOP '+process.env.HEROKU_APP_NAME,
             	'Text-part': 'Twitter\'s bot application as stop at : '+new Date().toTimeString(),
             	Recipients: [{'Email': process.env.MAIL}]
           })
@@ -471,7 +471,7 @@ function reset(err){
       .request({
         FromEmail: process.env.MAIL,
         FromName: 'BOTS',
-        Subject: 'Application error',
+        Subject: 'Application error '+process.env.HEROKU_APP_NAME,
         'Text-part': 'Twitter\'s bot application have an error : '+new Date().toTimeString()+'\n\n'+JSON.stringify(err),
         Recipients: [{'Email': process.env.MAIL}]
     })

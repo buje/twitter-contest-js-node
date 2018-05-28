@@ -11,6 +11,7 @@ ACCESS_TOKEN_SECRET=<your_key_here>
 MJ_APIKEY_PUBLIC=<mailjet_your_key_here>
 MJ_APIKEY_PRIVATE=<mailjet_your_key_here>
 MAIL=<your_email>
+HEROKU_APP_NAME=<HEROKU_APP_NAME>
 
 ## RUN
 
