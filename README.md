@@ -62,6 +62,9 @@ https://gist.github.com/dvdbng/7375821b20f189c189ab1bd29392c98e
 
 heroku open
 
+## GIT
+//see remote heroku
+> git remote -v
 
 Twitter API https://developer.twitter.com/en/docs
 

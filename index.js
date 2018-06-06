@@ -123,7 +123,7 @@ function getAllFriends(){
               }
             }else{
               console.log(chalk.bgBlack.white('GET all friends friendsLoop ' + friendsLoop));
-              if(friendsLoop =< 14){
+              if(friendsLoop <= 14){
                 console.log(chalk.bgBlack.white('STARTING WORKER !!!'));
                 worker();
               }
