@@ -112,6 +112,7 @@ function getAllFriends(){
               if(friendsLoop >= 14){
                 console.log(chalk.bgBlack.white('STARTING WORKER !!! friendsLoop ' + friendsLoop));
                 worker();
+                console.log(chalk.bgBlack.white('GET more friends in 16 min'));
                 setTimeout(function(){
                   //get rest of friends in 16 min
                   getAllFriends();
@@ -121,7 +122,8 @@ function getAllFriends(){
                 getAllFriends();
               }
             }else{
-              if(friendsLoop < 14){
+              console.log(chalk.bgBlack.white('GET all friends friendsLoop ' + friendsLoop));
+              if(friendsLoop =< 14){
                 console.log(chalk.bgBlack.white('STARTING WORKER !!!'));
                 worker();
               }
